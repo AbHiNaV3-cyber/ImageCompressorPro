@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { type CompressionSettings, type ImageInfo } from '@shared/schema';
 import { getFileFormat } from '@/lib/imageHelpers';
 import imageCompression from 'browser-image-compression';
+import { saveCompressionHistory } from '@/lib/supabase';
+import { apiRequest } from '@/lib/queryClient';
 
 export function useImageProcessing() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null);
   const [compressedImageUrl, setCompressedImageUrl] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [compressionSettings, setCompressionSettings] = useState<CompressionSettings>({
     compressionLevel: 80,
@@ -118,6 +121,22 @@ export function useImageProcessing() {
       
       setImageInfo(info);
       
+      // Save to Supabase
+      try {
+        setIsSaving(true);
+        // Use the server API endpoint to save compression history
+        await apiRequest(
+          'POST', 
+          '/api/compression-history', 
+          { image_info: info }
+        );
+      } catch (saveError) {
+        console.error('Error saving to Supabase:', saveError);
+        // Continue despite error - the user's compression still worked
+      } finally {
+        setIsSaving(false);
+      }
+      
     } catch (error) {
       console.error('Error processing image:', error);
     } finally {
@@ -147,6 +166,7 @@ export function useImageProcessing() {
     compressedImageUrl,
     compressionSettings,
     setCompressionSettings,
-    resetProcessing
+    resetProcessing,
+    isSaving
   };
 }

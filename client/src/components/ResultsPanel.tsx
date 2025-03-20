@@ -2,20 +2,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatFileSize } from '@/lib/imageHelpers';
 import { ImageInfo } from '@shared/schema';
-import { ArrowDown, Settings, FilePlus2 } from 'lucide-react';
+import { ArrowDown, Settings, FilePlus2, Database, Check } from 'lucide-react';
 
 interface ResultsPanelProps {
   imageInfo: ImageInfo;
   compressedImageUrl: string;
   onTryDifferentSettings: () => void;
   onCompressNewImage: () => void;
+  isSaving?: boolean;
 }
 
 export default function ResultsPanel({
   imageInfo,
   compressedImageUrl,
   onTryDifferentSettings,
-  onCompressNewImage
+  onCompressNewImage,
+  isSaving = false
 }: ResultsPanelProps) {
   const sizeReduction = imageInfo.compressionRatio ? Math.round(imageInfo.compressionRatio * 100) : 0;
   
@@ -118,6 +120,21 @@ export default function ResultsPanel({
               <FilePlus2 className="h-5 w-5 mr-2" />
               Compress New Image
             </Button>
+            
+            {/* Supabase storage indicator */}
+            <div className="flex items-center justify-center text-xs text-gray-500 mt-4">
+              {isSaving ? (
+                <>
+                  <Database className="h-3 w-3 mr-1 animate-pulse" />
+                  Saving to Supabase...
+                </>
+              ) : (
+                <>
+                  <Check className="h-3 w-3 mr-1 text-green-500" />
+                  Saved to Supabase
+                </>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

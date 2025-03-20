@@ -18,7 +18,8 @@ export default function Home() {
     compressedImageUrl,
     compressionSettings,
     setCompressionSettings,
-    resetProcessing
+    resetProcessing,
+    isSaving
   } = useImageProcessing();
 
   const handleImageUpload = (file: File) => {
@@ -119,6 +120,7 @@ export default function Home() {
                   compressedImageUrl={compressedImageUrl}
                   onTryDifferentSettings={handleTryDifferentSettings}
                   onCompressNewImage={handleCompressNewImage}
+                  isSaving={isSaving}
                 />
               </div>
             )}

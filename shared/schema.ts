@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -42,3 +42,19 @@ export const imageInfo = z.object({
 });
 
 export type ImageInfo = z.infer<typeof imageInfo>;
+
+// Compression history table
+export const compressionHistory = pgTable("compression_history", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  userId: integer("user_id").references(() => users.id),
+  imageInfo: json("image_info").$type<ImageInfo>().notNull(),
+});
+
+export const insertCompressionHistorySchema = createInsertSchema(compressionHistory).pick({
+  userId: true,
+  imageInfo: true,
+});
+
+export type InsertCompressionHistory = z.infer<typeof insertCompressionHistorySchema>;
+export type CompressionHistory = typeof compressionHistory.$inferSelect;
