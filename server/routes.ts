@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { supabase } from "./supabase";
 import { imageInfo } from "@shared/schema";
 import { z } from "zod";
 
@@ -17,13 +16,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get compression history
   app.get('/api/compression-history', async (req, res) => {
     try {
-      const { data, error } = await supabase
-        .from('compression_history')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      res.json(data || []);
+      const historyItems = await storage.getCompressionHistory();
+      res.json(historyItems);
     } catch (error) {
       console.error('Error fetching compression history:', error);
       res.status(500).json({ error: 'Failed to fetch compression history' });
@@ -43,15 +37,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const { data, error } = await supabase
-        .from('compression_history')
-        .insert({
-          image_info: req.body.image_info
-        })
-        .select();
+      const result = await storage.saveCompressionHistory(req.body.image_info);
       
-      if (error) throw error;
-      res.status(201).json(data?.[0] || {});
+      if (!result) {
+        throw new Error('Failed to save compression history');
+      }
+      
+      res.status(201).json(result);
     } catch (error) {
       console.error('Error saving compression history:', error);
       res.status(500).json({ error: 'Failed to save compression history' });
@@ -62,13 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/compression-history/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      
-      const { error } = await supabase
-        .from('compression_history')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+      await storage.deleteCompressionHistory(id);
       res.status(204).send();
     } catch (error) {
       console.error('Error deleting compression history:', error);
