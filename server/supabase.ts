@@ -1,5 +1,9 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { ImageInfo } from '@shared/schema';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 
 // Check for environment variables
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
